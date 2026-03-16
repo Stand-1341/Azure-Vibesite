@@ -59,7 +59,9 @@ Backend runs on `http://localhost:5000`.
 
 ## 2) Database setup
 
-Run the schema file against your Azure SQL database:
+The backend now auto-applies `backend/combined_schema.sql` during startup, so required tables/columns are created if missing.
+
+If you prefer to apply schema manually (or troubleshoot), you can still run:
 
 ```bash
 sqlcmd -S <server>.database.windows.net -d <db> -U <user> -P "<password>" -i backend/combined_schema.sql
@@ -102,4 +104,5 @@ npm run build
 
 - The frontend API base URL now comes from `REACT_APP_API_URL`.
 - If `REACT_APP_API_URL` is not set, it falls back to `http://localhost:5000/api`.
+- On backend startup, the app applies `backend/combined_schema.sql` automatically.
 - Keep `.env` files out of source control.
