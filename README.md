@@ -78,7 +78,7 @@ UPDATE dbo.Users SET role = 'admin' WHERE username = '<your_username>';
 Create `frontend/.env.development`:
 
 ```ini
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:5000
 ```
 
 Install and run:
@@ -102,7 +102,9 @@ npm run build
 
 ## Notes
 
-- The frontend API base URL now comes from `REACT_APP_API_URL`.
-- If `REACT_APP_API_URL` is not set, it falls back to `http://localhost:5000/api`.
+- JWT authentication is used for protected routes (login returns a token, frontend sends it as `Authorization: Bearer <token>`).
+- The frontend API base URL comes from `REACT_APP_API_URL`.
+- If `REACT_APP_API_URL` is not set, it falls back to `http://localhost:5000`.
+- Frontend requests already use `/api/...` paths, so avoid adding `/api` at the end of `REACT_APP_API_URL`.
 - On backend startup, the app applies `backend/combined_schema.sql` automatically.
 - Keep `.env` files out of source control.

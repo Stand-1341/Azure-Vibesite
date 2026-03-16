@@ -4,11 +4,16 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 const JWT_TOKEN_STORAGE_KEY = 'aegisAuthToken';
 
 const configuredApiUrl = process.env.REACT_APP_API_URL?.trim();
-const apiBaseUrl = configuredApiUrl && configuredApiUrl.length > 0
+const rawBaseUrl = configuredApiUrl && configuredApiUrl.length > 0
   ? configuredApiUrl
-  : 'http://localhost:5000/api';
+  : 'http://localhost:5000';
 
-axios.defaults.baseURL = apiBaseUrl.replace(/\/$/, '');
+// Endpoints in the app already include `/api/...`, so normalize away any trailing `/api` in env values.
+const normalizedBaseUrl = rawBaseUrl
+  .replace(/\/$/, '')
+  .replace(/\/api$/i, '');
+
+axios.defaults.baseURL = normalizedBaseUrl;
 
 axios.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
