@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt'); // Import bcrypt
 const multer = require('multer');
 const { BlobServiceClient } = require('@azure/storage-blob');
 const sql = require('mssql'); // Import mssql
+const fs = require('fs/promises');
+const path = require('path');
 
 const upload = multer({ storage: multer.memoryStorage() });
 const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
@@ -46,6 +48,28 @@ const dbConfig = {
 };
 
 let pool; // Single pool for the combined database
+
+async function applySchema() {
+    try {
+        const schemaPath = path.join(__dirname, 'combined_schema.sql');
+        const schemaSql = await fs.readFile(schemaPath, 'utf8');
+
+        const batches = schemaSql
+            .split(/^\s*GO\s*$/gim)
+            .map((batch) => batch.trim())
+            .filter(Boolean);
+
+        for (const batch of batches) {
+            await pool.request().query(batch);
+        }
+
+        console.log(`Database schema ensured from ${schemaPath}`);
+    } catch (err) {
+        console.error('Failed to apply database schema:', err);
+        throw err;
+    }
+}
+
 
 // --- Updated Database Connection Function ---
 async function connectDb() { // Renamed for clarity
@@ -1168,6 +1192,7 @@ app.delete('/api/users/:userId', requireLogin, requireAdmin, async (req, res) =>
 // --- Server Start ---
 async function startServer() {
     await connectDb(); // Ensure DB is connected before starting listener
+    await applySchema(); // Ensure DB schema exists/updated before handling requests
     app.listen(port, () => {
         console.log(`Server running on port ${port}`);
         if (!process.env.JWT_SECRET) {
